@@ -1,0 +1,353 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define p printf
+#define s scanf
+#define ll long long
+
+struct base {
+	char location1[50];
+	char location2[50];
+	ll int price;
+	ll int rooms;
+	ll int bathrooms;
+	ll int carparks;
+	char type[20];
+	char furnish[20];
+
+};
+
+//menu
+void mainmenu();
+
+//function 1
+void display(base data[], int size);
+
+//function 2
+int linearsearch(base data[], int size, char *column, char *target);
+
+//function 3
+void mergesort(base data[],int left,int right, char *column);
+int merge(base data[],int left,int right,char *column);
+//printing
+void printdescending(base data[], int size);
+void printascending(base data[], int size);
+
+//function 4
+
+int main() {
+
+	struct base data[5000];
+
+	FILE *fp = fopen("file.csv", "r");
+
+	char useless[200];
+
+	fscanf(fp, "%[^\n]\n", useless);
+
+	int count = 0;
+	while(!feof(fp)) {
+		fscanf(fp, "%[^,],%[^,],%lld,%lld,%lld,%lld,%[^,],%s\n", &data[count].location1,
+		       &data[count].location2, &data[count].price, &data[count].rooms, &data[count].bathrooms,
+		       &data[count].carparks, data[count].type, data[count].furnish);
+		count++;
+	}
+	mainmenu();
+
+	int choice;
+	p("Your choice: ");
+	s("%d",&choice);
+
+	switch(choice) {
+		case 1: {
+			int rows;
+			p("Number of rows: ");
+			s("%d", &rows);
+			if(rows > count) {
+				rows = count;
+			}
+			display(data,rows);
+			break;
+		}
+		case 2: {
+			char column[25];
+			char find[20];
+			p("Choose column: ");
+			scanf("%s", &column);
+			printf("What data do you want to find? ");
+			scanf("%s", &find);
+			linearsearch(data, count, column, find);
+
+			break;
+		}
+
+		case 3: {
+			char column[15];
+			char order[10];
+			p("Choose Column: ");
+			s("%s",&column);
+			p("Sort Ascending or Descending: ");
+			s("%s",&order);
+
+			mergesort(data,0,count -1,column);
+
+			if(strcmp( order, "ascending") == 0 || strcmp( order, "asc") == 0 || strcmp( order, "Ascending") == 0 || strcmp( order, "Asc") == 0) {
+				printascending(data,count);
+
+			} else if(strcmp(order, "descending") == 0 || strcmp(order, "dsc") == 0 || strcmp(order, "Descending") == 0 || strcmp(order, "Dsc") == 0 || strcmp(order, "Des") == 0 ||strcmp(order, "des") == 0) {
+				printdescending(data,count);
+			}
+			break;
+		}
+
+		case 4: {
+			char name[20];
+			char file[10];
+
+			p("file name: ");
+			scanf("%s", &name);
+			getchar();
+
+			sprintf(file, "%s.csv", name);
+			FILE *of = fopen(file, "w");
+
+			for(int i = 0; i < count; i++) {
+				fprintf(of, "%s,%s,%lld,%lld,%lld,%lld,%s,%s\n", data[i].location1, data[i].location2,
+				        data[i].price, data[i].rooms, data[i].carparks, data[i].type, data[i].furnish);
+			}
+			p("Data succesfully written to file %s.csv\n", name);
+
+			fclose(of);
+			break;
+		}
+
+		case 5: {
+			p("Good bye\n");
+			break;
+		}
+	}
+
+	fclose(fp);
+	return 0;
+}
+
+
+
+void display(base data[], int size) {
+
+	p(" Location	      	   City	        	Price       Rooms  Bathroom   Car park   Type 	   Furnish\n");
+
+	for(int i = 0; i < size; i++) {
+		p(" %-25s %-20s %-11lld %-6d %-10lld %-10lld %-9s %s\n", data[i].location1,
+		  data[i].location2, data[i].price, data[i].rooms, data[i].bathrooms, data[i].carparks, data[i].type, data[i].furnish);
+	}
+}
+
+
+void mainmenu() {
+	p("What do you want to do?\n");
+	p("1. Display data\n");
+	p("2. Search Data\n");
+	p("3. Sort Data\n");
+	p("4. Export Data\n");
+	p("5. Exit\n");
+}
+
+//function 3
+int merge(base data[], int left, int right, char *column) {
+	int mid = (right + left) / 2;
+	int curr = 0;
+	base sortingList[right - left + 1];
+	int leftIndex = left;
+	int rightIndex = mid + 1;
+
+	while (leftIndex <= mid && rightIndex <= right) {
+		if (strcmp(column, "Location") == 0 || strcmp(column, "location") == 0) {
+			if(strcmp(data[leftIndex].location1, data[rightIndex].location1) < 0) {
+				sortingList[curr++] = data[leftIndex++];
+			} else {
+				sortingList[curr++] = data[rightIndex++];
+			}
+		} else if(strcmp(column, "City") == 0 || strcmp(column, "city") == 0) {
+			if(strcmp(data[leftIndex].location2, data[rightIndex].location2) < 0) {
+				sortingList[curr++] = data[leftIndex++];
+			} else {
+				sortingList[curr++] = data[rightIndex++];
+			}
+
+		} else if(strcmp(column, "Price") == 0 || strcmp(column, "price") == 0) {
+			if(data[leftIndex].price < data[rightIndex].price) {
+				sortingList[curr++] = data[leftIndex++];
+			} else {
+				sortingList[curr++] = data[rightIndex++];
+			}
+
+		} else if(strcmp(column, "Rooms") == 0 || strcmp(column, "rooms") == 0 || strcmp(column, "Room") == 0 || strcmp(column, "room") == 0) {
+			if(data[leftIndex].rooms < data[rightIndex].rooms) {
+				sortingList[curr++] = data[leftIndex++];
+			} else {
+				sortingList[curr++] = data[rightIndex++];
+			}
+		} else if(strcmp(column, "Bathroom") == 0 || strcmp(column, "bathroom") == 0 ||strcmp(column, "Bathrooms") == 0 || strcmp(column, "bathrooms") == 0) {
+			if(data[leftIndex].bathrooms < data[rightIndex].bathrooms) {
+				sortingList[curr++] = data[leftIndex++];
+			} else {
+				sortingList[curr++] = data[rightIndex++];
+			}
+		} else if(strcmp(column, "Carpark") == 0 || strcmp(column, "carpark") == 0 || strcmp(column, "Carparks") == 0 || strcmp(column, "carparks") == 0 ) {
+			if(data[leftIndex].price < data[rightIndex].price) {
+				sortingList[curr++] = data[leftIndex++];
+			} else {
+				sortingList[curr++] = data[rightIndex++];
+			}
+
+		} else if(strcmp(column, "Type") == 0 || strcmp(column, "type") == 0) {
+
+			if(strcmp(data[leftIndex].type, data[rightIndex].type) < 0) {
+				sortingList[curr++] = data[leftIndex++];
+			} else {
+				sortingList[curr++] = data[rightIndex++];
+			}
+		} else if(strcmp(column, "Furnish") == 0 || strcmp(column, "furnish") == 0) {
+
+			if(strcmp(data[leftIndex].furnish, data[rightIndex].furnish) < 0) {
+				sortingList[curr++] = data[leftIndex++];
+			} else {
+				sortingList[curr++] = data[rightIndex++];
+			}
+		}
+	}
+
+	while(leftIndex <= mid) {
+		sortingList[curr++] = data[leftIndex++];
+	}
+
+	while(rightIndex <= right) {
+		sortingList[curr++] = data[rightIndex++];
+	}
+
+	for(int i = 0; i < curr; i++) {
+		data[left + i] = sortingList[i];
+	}
+}
+
+void mergesort(base data[], int left, int right, char *column) {
+	if(left < right) {
+		int mid = (right + left) / 2;
+		mergesort(data, left, mid, column);
+		mergesort(data, mid + 1, right, column);
+		merge(data, left, right, column);
+	}
+}
+
+void printascending(base data[], int size) {
+
+	p(" Location	      	   City	        	Price       Rooms  Bathroom   Car park   Type 	   Furnish\n");
+
+	for(int i = 0; i < 10 ; i++) {
+		p(" %-25s %-20s %-11lld %-6d %-10lld %-10lld %-9s %s\n", data[i].location1,
+		  data[i].location2, data[i].price, data[i].rooms, data[i].bathrooms, data[i].carparks, data[i].type, data[i].furnish);
+	}
+}
+
+void printdescending(base data[], int size) {
+
+	p(" Location	      	   City	        	Price       Rooms  Bathroom   Car park   Type 	   Furnish\n");
+	for(int i = size - 1 ; i > size - 11; i--) {
+
+		p(" %-25s %-20s %-11lld %-6d %-10lld %-10lld %-9s %s\n", data[i].location1,
+		  data[i].location2, data[i].price, data[i].rooms, data[i].bathrooms, data[i].carparks, data[i].type, data[i].furnish);
+	}
+}
+
+
+
+
+// funtion 2
+int linearsearch(base data[], int size, char *column, char *target) {
+	int found = 0;
+
+	for (int i = 0; i < size; i++) {
+		if(strcmp(column, "Location") == 0 || strcmp(column, "location") == 0) {
+			if(strcmp(target, data[i].location1) == 0) {
+				if(found == 0) {
+					p(" Location	      	   City	        	Price       Rooms  Bathroom   Car park   Type 	   Furnish\n");
+				}
+				p(" %-25s %-20s %-11lld %-6d %-10lld %-10lld %-9s %s\n", data[i].location1,
+				  data[i].location2, data[i].price, data[i].rooms, data[i].bathrooms, data[i].carparks, data[i].type, data[i].furnish);
+				found = 1;
+			}
+		} else if(strcmp(column, "City") == 0 || strcmp(column, "city") == 0) {
+			if(strcmp(target, data[i].location2) == 0) {
+				if(found == 0) {
+					p(" Location	      	   City	        	Price       Rooms  Bathroom   Car park   Type 	   Furnish\n");
+				}
+				p(" %-25s %-20s %-11lld %-6d %-10lld %-10lld %-9s %s\n", data[i].location1,
+				  data[i].location2, data[i].price, data[i].rooms, data[i].bathrooms, data[i].carparks, data[i].type, data[i].furnish);
+				found = 1;
+			}
+		} else if(strcmp(column, "Price") == 0 || strcmp(column, "price") == 0) {
+			if(atoll(target) == data[i].price) {
+				if(found == 0) {
+					p(" Location	      	   City	        	Price       Rooms  Bathroom   Car park   Type 	   Furnish\n");
+				}
+				p(" %-25s %-20s %-11lld %-6d %-10lld %-10lld %-9s %s\n", data[i].location1,
+				  data[i].location2, data[i].price, data[i].rooms, data[i].bathrooms, data[i].carparks, data[i].type, data[i].furnish);
+				found = 1;
+			}
+		} else if(strcmp(column, "Rooms") == 0 || strcmp(column, "rooms") == 0 || strcmp(column, "Room") == 0 || strcmp(column, "room") == 0) {
+			if(atoll(target) == data[i].rooms) {
+				if(found == 0) {
+					p(" Location	      	   City	        	Price       Rooms  Bathroom   Car park   Type 	   Furnish\n");
+				}
+				p(" %-25s %-20s %-11lld %-6d %-10lld %-10lld %-9s %s\n", data[i].location1,
+				  data[i].location2, data[i].price, data[i].rooms, data[i].bathrooms, data[i].carparks, data[i].type, data[i].furnish);
+				found = 1;
+			}
+		} else if(strcmp(column, "Bathroom") == 0 || strcmp(column, "bathroom") == 0 ||strcmp(column, "Bathrooms") == 0 || strcmp(column, "bathrooms") == 0) {
+			if(atoll(target) == data[i].bathrooms) {
+				if(found == 0) {
+					p(" Location	      	   City	        	Price       Rooms  Bathroom   Car park   Type 	   Furnish\n");
+				}
+				p(" %-25s %-20s %-11lld %-6d %-10lld %-10lld %-9s %s\n", data[i].location1,
+				  data[i].location2, data[i].price, data[i].rooms, data[i].bathrooms, data[i].carparks, data[i].type, data[i].furnish);
+				found = 1;
+			}
+		} else if(strcmp(column, "Carpark") == 0 || strcmp(column, "carpark") == 0 || strcmp(column, "Carparks") == 0 || strcmp(column, "carparks") == 0) {
+			if(atoll(target) == data[i].carparks) {
+				if(found == 0) {
+					p(" Location	      	   City	        	Price       Rooms  Bathroom   Car park   Type 	   Furnish\n");
+				}
+				p(" %-25s %-20s %-11lld %-6d %-10lld %-10lld %-9s %s\n", data[i].location1,
+				  data[i].location2, data[i].price, data[i].rooms, data[i].bathrooms, data[i].carparks, data[i].type, data[i].furnish);
+				found = 1;
+			}
+		} else if (strcmp(column, "Type") == 0 || strcmp(column, "type") == 0) {
+			if (strcmp(target, data[i].type) == 0) {
+				if (found == 0) {
+					p(" Location	      	   City	        	Price       Rooms  Bathroom   Car park   Type 	   Furnish\n");
+				}
+				p(" %-25s %-20s %-11lld %-6d %-10lld %-10lld %-9s %s\n", data[i].location1,
+				  data[i].location2, data[i].price, data[i].rooms, data[i].bathrooms, data[i].carparks, data[i].type, data[i].furnish);
+				found = 1;
+			}
+		} else if (strcmp(column, "Furnish") == 0 || strcmp(column, "furnish") == 0 || strcmp(column, "Furnishs") == 0 || strcmp(column, "furnishs") == 0) {
+			if (strcmp(target, data[i].furnish) == 0) {
+				if (found == 0) {
+					p(" Location	      	   City	        	Price       Rooms  Bathroom   Car park   Type 	   Furnish\n");
+				}
+				p(" %-25s %-20s %-11lld %-6d %-10lld %-10lld %-9s %s\n", data[i].location1,
+				  data[i].location2, data[i].price, data[i].rooms, data[i].bathrooms, data[i].carparks, data[i].type, data[i].furnish);
+				found = 1;
+			}
+		}
+	}
+
+	if (found == 0) {
+		p("Data not found!\n");
+	}
+
+	return found;
+}
+
